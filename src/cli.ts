@@ -4,34 +4,33 @@
  * OrqaStudio CLI — general-purpose command-line interface.
  *
  * Usage:
- *   orqa plugin list                              List installed plugins
- *   orqa plugin install <owner/repo> [--version]  Install from GitHub release
- *   orqa plugin install <path>                    Install from local path
- *   orqa plugin uninstall <name>                  Remove a plugin
- *   orqa plugin update [name]                     Update one or all plugins
- *   orqa plugin registry [--official|--community] Browse available plugins
- *   orqa plugin create [template]                 Scaffold from template
- *   orqa validate [path]                          Run integrity check
- *   orqa debug [command]                          Run debug tool
- *   orqa graph [--type <type>] [--status <s>]     Browse the artifact graph
+ *   orqa plugin <subcommand>                    Plugin management
+ *   orqa validate [path] [--json]               Run integrity check
+ *   orqa graph [--type <type>] [--status <s>]   Browse the artifact graph
+ *   orqa version sync|bump|check|show           Version management
+ *   orqa repo license|readme                    Repo maintenance audits
+ *   orqa debug [command]                        Run debug tool
  */
 
-import { parseArgs } from "node:util";
 import { runPluginCommand } from "./commands/plugin.js";
 import { runValidateCommand } from "./commands/validate.js";
 import { runDebugCommand } from "./commands/debug.js";
 import { runGraphCommand } from "./commands/graph.js";
+import { runVersionCommand } from "./commands/version.js";
+import { runRepoCommand } from "./commands/repo.js";
 
 const USAGE = `
-OrqaStudio CLI v0.1.0
+OrqaStudio CLI v0.1.0-dev
 
 Usage: orqa <command> [options]
 
 Commands:
   plugin      Plugin management (install, uninstall, list, update, registry, create)
   validate    Run integrity validation on the current project
-  debug       Run the debug tool
   graph       Browse the artifact graph
+  version     Version management (sync, bump, check, show)
+  repo        Repo maintenance (license audit, readme audit)
+  debug       Run the debug tool
 
 Options:
   --help, -h     Show this help message
@@ -63,11 +62,17 @@ async function main(): Promise<void> {
 		case "validate":
 			await runValidateCommand(commandArgs);
 			break;
-		case "debug":
-			await runDebugCommand(commandArgs);
-			break;
 		case "graph":
 			await runGraphCommand(commandArgs);
+			break;
+		case "version":
+			await runVersionCommand(commandArgs);
+			break;
+		case "repo":
+			await runRepoCommand(commandArgs);
+			break;
+		case "debug":
+			await runDebugCommand(commandArgs);
 			break;
 		default:
 			console.error(`Unknown command: ${command}`);

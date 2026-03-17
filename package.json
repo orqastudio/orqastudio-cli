@@ -1,7 +1,7 @@
 {
   "name": "@orqastudio/cli",
   "version": "0.1.0-dev",
-  "description": "General-purpose CLI for OrqaStudio — plugin management, validation, and debugging.",
+  "description": "General-purpose CLI for OrqaStudio — plugin management, validation, graph browsing, version management, and dev environment maintenance.",
   "type": "module",
   "bin": {
     "orqa": "dist/cli.js"
@@ -20,7 +20,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@orqastudio/types": "0.1.0-dev"
+    "@orqastudio/types": "0.1.0-dev",
+    "@orqastudio/integrity-validator": "0.1.0-dev"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
@@ -33,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:orqastudio/orqastudio-cli.git"
+    "url": "git@github.com:orqastudio/orqastudio-lib-cli.git"
   },
   "license": "BSL-1.1"
 }
