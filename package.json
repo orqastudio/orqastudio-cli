@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@orqastudio/types": "0.1.0-dev",
-    "@orqastudio/integrity-validator": "0.1.0-dev"
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0"
