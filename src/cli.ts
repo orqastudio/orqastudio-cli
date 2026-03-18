@@ -4,14 +4,15 @@
  * OrqaStudio CLI — general-purpose command-line interface.
  *
  * Usage:
- *   orqa plugin <subcommand>                    Plugin management
- *   orqa validate [path] [--json]               Run integrity check
- *   orqa graph [--type <type>] [--status <s>]   Browse the artifact graph
- *   orqa version sync|bump|check|show           Version management
- *   orqa repo license|readme                    Repo maintenance audits
- *   orqa install [prereqs|submodules|deps|link|verify]  Dev environment install
- *   orqa setup link                              Dev environment setup (legacy)
- *   orqa debug [command]                        Run debug tool
+ *   orqa install [prereqs|submodules|deps|link]  Dev environment setup
+ *   orqa verify                                   Governance checks (integrity, version, license, readme)
+ *   orqa check [rust|app|types|sdk|cli]           Code quality (lint, typecheck, format)
+ *   orqa test [rust|app]                          Run test suites
+ *   orqa validate [path] [--json]                 Integrity validation only
+ *   orqa plugin <subcommand>                      Plugin management
+ *   orqa graph [--type <type>] [--status <s>]     Browse the artifact graph
+ *   orqa version sync|bump|check|show             Version management
+ *   orqa repo license|readme                      Repo maintenance audits
  */
 
 import { runPluginCommand } from "./commands/plugin.js";
@@ -20,9 +21,10 @@ import { runDebugCommand } from "./commands/debug.js";
 import { runGraphCommand } from "./commands/graph.js";
 import { runVersionCommand } from "./commands/version.js";
 import { runRepoCommand } from "./commands/repo.js";
-import { runSetupCommand } from "./commands/setup.js";
 import { runInstallCommand } from "./commands/install.js";
 import { runVerifyCommand } from "./commands/verify.js";
+import { runCheckCommand } from "./commands/check.js";
+import { runTestCommand } from "./commands/test.js";
 
 const USAGE = `
 OrqaStudio CLI v0.1.0-dev
@@ -30,15 +32,15 @@ OrqaStudio CLI v0.1.0-dev
 Usage: orqa <command> [options]
 
 Commands:
-  install     Full dev environment setup (or individual steps: prereqs, submodules, deps, link, verify)
-  verify      Run all checks (integrity, version, license, readme)
+  install     Full dev environment setup (prereqs, submodules, deps, link)
+  verify      Governance checks (integrity, version, license, readme)
+  check       Code quality checks (lint, typecheck, format)
+  test        Run test suites (rust, app)
+  validate    Integrity validation only
   plugin      Plugin management (install, uninstall, list, update, registry, create)
-  validate    Run integrity validation only
   graph       Browse the artifact graph
   version     Version management (sync, bump, check, show)
   repo        Repo maintenance (license audit, readme audit)
-  setup       Dev environment setup (legacy — use 'install' instead)
-  debug       Run the debug tool
 
 Options:
   --help, -h     Show this help message
@@ -64,11 +66,23 @@ async function main(): Promise<void> {
 	const commandArgs = args.slice(1);
 
 	switch (command) {
-		case "plugin":
-			await runPluginCommand(commandArgs);
+		case "install":
+			await runInstallCommand(commandArgs);
+			break;
+		case "verify":
+			await runVerifyCommand();
+			break;
+		case "check":
+			await runCheckCommand(commandArgs);
+			break;
+		case "test":
+			await runTestCommand(commandArgs);
 			break;
 		case "validate":
 			await runValidateCommand(commandArgs);
+			break;
+		case "plugin":
+			await runPluginCommand(commandArgs);
 			break;
 		case "graph":
 			await runGraphCommand(commandArgs);
@@ -78,15 +92,6 @@ async function main(): Promise<void> {
 			break;
 		case "repo":
 			await runRepoCommand(commandArgs);
-			break;
-		case "install":
-			await runInstallCommand(commandArgs);
-			break;
-		case "verify":
-			await runVerifyCommand();
-			break;
-		case "setup":
-			await runSetupCommand(commandArgs);
 			break;
 		case "debug":
 			await runDebugCommand(commandArgs);
