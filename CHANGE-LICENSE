@@ -1,0 +1,93 @@
+Apache License, Version 2.0, with Ethical Use Addendum
+
+This license applies to versions of the Licensed Work after their Change
+Date, as defined in the accompanying LICENSE (Business Source License 1.1).
+
+================================================================================
+PART 1: Apache License, Version 2.0
+================================================================================
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License and the Ethical
+Use Addendum below. You may obtain a copy of the Apache License at:
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations
+under the License.
+
+================================================================================
+PART 2: Ethical Use Addendum
+================================================================================
+
+In addition to the terms of the Apache License, Version 2.0, the following
+conditions apply to all use of this software, including use after the
+Change Date:
+
+1. PROHIBITED USE
+
+   This software may not be used by any organisation whose mission,
+   activities, or funded advocacy actively works to restrict, diminish, or
+   remove the rights of any person or group based on:
+
+   - race
+   - ethnicity
+   - national origin
+   - sex
+   - gender
+   - gender identity
+   - gender expression
+   - sexual orientation
+   - disability
+   - age
+   - religion
+   - socioeconomic status
+
+   This includes, but is not limited to, organisations that fund, lobby
+   for, or promote policies that deny equal access to healthcare,
+   education, housing, or legal protections on any of these grounds.
+
+2. NO HOSTED SERVICE
+
+   This software may not be offered to third parties as a hosted or
+   managed service (SaaS), whether for commercial gain or otherwise,
+   without a separate written agreement from the Licensor.
+
+3. ENFORCEMENT
+
+   Any use of this software in violation of this Addendum automatically
+   terminates all rights granted under both the Apache License and this
+   Addendum. The Licensor reserves the right to enforce these terms.
+
+4. INTERPRETATION
+
+   This Addendum is intended to prevent the use of this software in ways
+   that cause harm to marginalised communities. In cases of ambiguity,
+   the Addendum should be interpreted in favour of protecting the rights
+   and dignity of all people, consistent with the principles of the
+   Universal Declaration of Human Rights.
+
+5. SEVERABILITY
+
+   If any provision of this Addendum is held to be unenforceable in a
+   given jurisdiction, the remaining provisions continue in full force.
+   The unenforceable provision shall be modified to the minimum extent
+   necessary to make it enforceable while preserving its intent.
+
+================================================================================
+NOTICE
+================================================================================
+
+This is not an OSI-approved license. It is the Apache License, Version 2.0,
+combined with an Ethical Use Addendum that restricts use by organisations
+that actively work against human rights and equal opportunity.
+
+The Addendum reflects the values of the Licensor: that AI should be a tool
+that helps build a society where everyone is looked after and treated equally,
+and that technology should serve equal opportunity — not undermine it.
+
+Licensor: Bobbi Byrne-Graham
+Project:  OrqaStudio
