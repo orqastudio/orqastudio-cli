@@ -1,6 +1,9 @@
 /**
  * Version sync — propagate a canonical version across all package.json,
  * orqa-plugin.json, Cargo.toml, and plugin.json files in a dev environment.
+ *
+ * The VERSION file at the dev repo root is the single source of truth.
+ * No submodule may define its own version independently.
  */
 
 import * as fs from "node:fs";
@@ -10,6 +13,21 @@ export interface VersionSyncResult {
 	version: string;
 	updated: string[];
 	skipped: string[];
+}
+
+export interface VersionDrift {
+	file: string;
+	found: string;
+	expected: string;
+	type: "package" | "dependency" | "cargo";
+}
+
+/**
+ * Validate a version string.
+ * Must be semver: X.Y.Z or X.Y.Z-suffix (e.g. 0.1.0-dev, 1.0.0-rc.1)
+ */
+export function isValidVersion(version: string): boolean {
+	return /^\d+\.\d+\.\d+(-[\w.]+)?$/.test(version);
 }
 
 /**
@@ -27,6 +45,11 @@ export function readCanonicalVersion(projectRoot: string): string {
  * Write the canonical version to the VERSION file.
  */
 export function writeCanonicalVersion(projectRoot: string, version: string): void {
+	if (!isValidVersion(version)) {
+		throw new Error(
+			`Invalid version format: "${version}". Expected semver: X.Y.Z or X.Y.Z-suffix (e.g. 0.1.0-dev)`,
+		);
+	}
 	fs.writeFileSync(path.join(projectRoot, "VERSION"), version + "\n", "utf-8");
 }
 
@@ -35,6 +58,10 @@ export function writeCanonicalVersion(projectRoot: string, version: string): voi
  * and .claude-plugin/plugin.json files found in the dev environment.
  */
 export function syncVersions(projectRoot: string, version: string): VersionSyncResult {
+	if (!isValidVersion(version)) {
+		throw new Error(`Invalid version format: "${version}"`);
+	}
+
 	const updated: string[] = [];
 	const skipped: string[] = [];
 
@@ -56,7 +83,7 @@ export function syncVersions(projectRoot: string, version: string): VersionSyncR
 		for (const entry of fs.readdirSync(connectorsDir, { withFileTypes: true })) {
 			if (!entry.isDirectory()) continue;
 			const dir = path.join(connectorsDir, entry.name);
-			updateJsonVersion(path.join(dir, "package.json"), version) && updated.push(path.join(dir, "package.json"));
+			if (updateJsonVersion(path.join(dir, "package.json"), version)) updated.push(path.join(dir, "package.json"));
 			updateOrqaDeps(path.join(dir, "package.json"), version);
 		}
 	}
@@ -75,10 +102,10 @@ export function syncVersions(projectRoot: string, version: string): VersionSyncR
 		for (const entry of fs.readdirSync(pluginsDir, { withFileTypes: true })) {
 			if (!entry.isDirectory()) continue;
 			const dir = path.join(pluginsDir, entry.name);
-			updateJsonVersion(path.join(dir, "orqa-plugin.json"), version) && updated.push(path.join(dir, "orqa-plugin.json"));
-			updateJsonVersion(path.join(dir, "package.json"), version) && updated.push(path.join(dir, "package.json"));
-			updateJsonVersion(path.join(dir, ".claude-plugin", "plugin.json"), version) && updated.push(path.join(dir, ".claude-plugin/plugin.json"));
-			updateOrqaDeps(path.join(dir, "package.json"), version);
+			if (updateJsonVersion(path.join(dir, "orqa-plugin.json"), version)) updated.push(path.join(dir, "orqa-plugin.json"));
+			if (updateJsonVersion(path.join(dir, "package.json"), version)) updated.push(path.join(dir, "package.json"));
+			if (updateJsonVersion(path.join(dir, ".claude-plugin", "plugin.json"), version)) updated.push(path.join(dir, ".claude-plugin/plugin.json"));
+			if (updateOrqaDeps(path.join(dir, "package.json"), version)) updated.push(path.join(dir, "package.json") + " (deps)");
 		}
 	}
 
@@ -87,17 +114,28 @@ export function syncVersions(projectRoot: string, version: string): VersionSyncR
 
 /**
  * Check if all packages in the dev environment have the same version.
+ * Checks package versions, @orqastudio/* dependency versions, and Cargo.toml.
  */
-export function checkVersionDrift(projectRoot: string): Array<{ file: string; version: string }> {
+export function checkVersionDrift(projectRoot: string): VersionDrift[] {
 	const canonical = readCanonicalVersion(projectRoot);
-	const drift: Array<{ file: string; version: string }> = [];
+	const drift: VersionDrift[] = [];
 
 	const checkJson = (filePath: string) => {
 		if (!fs.existsSync(filePath)) return;
 		try {
 			const data = JSON.parse(fs.readFileSync(filePath, "utf-8"));
+			// Check package version
 			if (data.version && data.version !== canonical) {
-				drift.push({ file: filePath, version: data.version });
+				drift.push({ file: filePath, found: data.version, expected: canonical, type: "package" });
+			}
+			// Check @orqastudio/* dependency versions
+			for (const section of ["dependencies", "devDependencies", "peerDependencies"]) {
+				if (!data[section]) continue;
+				for (const [key, val] of Object.entries(data[section] as Record<string, string>)) {
+					if (key.startsWith("@orqastudio/") && val !== canonical) {
+						drift.push({ file: `${filePath} → ${key}`, found: val, expected: canonical, type: "dependency" });
+					}
+				}
 			}
 		} catch { /* skip */ }
 	};
@@ -114,6 +152,18 @@ export function checkVersionDrift(projectRoot: string): Array<{ file: string; ve
 	}
 
 	checkJson(path.join(projectRoot, "app", "ui", "package.json"));
+
+	// Check Cargo.toml
+	const cargoToml = path.join(projectRoot, "app", "backend", "src-tauri", "Cargo.toml");
+	if (fs.existsSync(cargoToml)) {
+		try {
+			const content = fs.readFileSync(cargoToml, "utf-8");
+			const match = content.match(/^version = "(.+)"/m);
+			if (match && match[1] !== canonical) {
+				drift.push({ file: cargoToml, found: match[1], expected: canonical, type: "cargo" });
+			}
+		} catch { /* skip */ }
+	}
 
 	return drift;
 }

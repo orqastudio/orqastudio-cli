@@ -1,7 +1,7 @@
 /**
  * Version management commands.
  *
- * orqa version sync|bump|check
+ * orqa version sync|bump|check|show
  */
 
 import {
@@ -9,6 +9,7 @@ import {
 	writeCanonicalVersion,
 	syncVersions,
 	checkVersionDrift,
+	isValidVersion,
 } from "../lib/version-sync.js";
 
 const USAGE = `
@@ -17,7 +18,7 @@ Usage: orqa version <subcommand> [options]
 Subcommands:
   sync              Sync VERSION file to all package.json, Cargo.toml, orqa-plugin.json
   bump <version>    Set new version and sync (e.g. orqa version bump 0.2.0-dev)
-  check             Check for version drift across repos
+  check             Check for version drift across repos (packages, deps, Cargo.toml)
   show              Show the current canonical version
 `.trim();
 
@@ -56,6 +57,11 @@ export async function runVersionCommand(args: string[]): Promise<void> {
 				console.error("Example: orqa version bump 0.2.0-dev");
 				process.exit(1);
 			}
+			if (!isValidVersion(newVersion)) {
+				console.error(`Invalid version format: "${newVersion}"`);
+				console.error("Expected semver: X.Y.Z or X.Y.Z-suffix (e.g. 0.1.0-dev, 1.0.0-rc.1)");
+				process.exit(1);
+			}
 			writeCanonicalVersion(root, newVersion);
 			console.log(`Version set to: ${newVersion}`);
 			const result = syncVersions(root, newVersion);
@@ -75,9 +81,10 @@ export async function runVersionCommand(args: string[]): Promise<void> {
 			if (drift.length === 0) {
 				console.log("All packages in sync.");
 			} else {
-				console.log(`\n${drift.length} package(s) out of sync:\n`);
+				console.log(`\n${drift.length} drift(s) detected:\n`);
 				for (const d of drift) {
-					console.log(`  ${d.file}: ${d.version} (expected ${canonical})`);
+					const label = d.type === "dependency" ? "dep" : d.type === "cargo" ? "cargo" : "pkg";
+					console.log(`  [${label}] ${d.file}: ${d.found} (expected ${d.expected})`);
 				}
 				process.exit(1);
 			}
