@@ -9,7 +9,8 @@
  *   orqa graph [--type <type>] [--status <s>]   Browse the artifact graph
  *   orqa version sync|bump|check|show           Version management
  *   orqa repo license|readme                    Repo maintenance audits
- *   orqa setup link                              Dev environment setup
+ *   orqa install [prereqs|submodules|deps|link|verify]  Dev environment install
+ *   orqa setup link                              Dev environment setup (legacy)
  *   orqa debug [command]                        Run debug tool
  */
 
@@ -20,6 +21,8 @@ import { runGraphCommand } from "./commands/graph.js";
 import { runVersionCommand } from "./commands/version.js";
 import { runRepoCommand } from "./commands/repo.js";
 import { runSetupCommand } from "./commands/setup.js";
+import { runInstallCommand } from "./commands/install.js";
+import { runVerifyCommand } from "./commands/verify.js";
 
 const USAGE = `
 OrqaStudio CLI v0.1.0-dev
@@ -27,12 +30,14 @@ OrqaStudio CLI v0.1.0-dev
 Usage: orqa <command> [options]
 
 Commands:
+  install     Full dev environment setup (or individual steps: prereqs, submodules, deps, link, verify)
+  verify      Run all checks (integrity, version, license, readme)
   plugin      Plugin management (install, uninstall, list, update, registry, create)
-  validate    Run integrity validation on the current project
+  validate    Run integrity validation only
   graph       Browse the artifact graph
   version     Version management (sync, bump, check, show)
   repo        Repo maintenance (license audit, readme audit)
-  setup       Dev environment setup (link)
+  setup       Dev environment setup (legacy — use 'install' instead)
   debug       Run the debug tool
 
 Options:
@@ -73,6 +78,12 @@ async function main(): Promise<void> {
 			break;
 		case "repo":
 			await runRepoCommand(commandArgs);
+			break;
+		case "install":
+			await runInstallCommand(commandArgs);
+			break;
+		case "verify":
+			await runVerifyCommand();
 			break;
 		case "setup":
 			await runSetupCommand(commandArgs);

@@ -8,7 +8,8 @@
  *   orqa graph [--type <type>] [--status <s>]   Browse the artifact graph
  *   orqa version sync|bump|check|show           Version management
  *   orqa repo license|readme                    Repo maintenance audits
- *   orqa setup link                              Dev environment setup
+ *   orqa install [prereqs|submodules|deps|link|verify]  Dev environment install
+ *   orqa setup link                              Dev environment setup (legacy)
  *   orqa debug [command]                        Run debug tool
  */
 export {};
