@@ -1,0 +1,136 @@
+Business Source License 1.1
+
+Parameters
+
+Licensor:             Bobbi Byrne-Graham
+Licensed Work:        OrqaStudio
+                      The Licensed Work is (c) 2026 Bobbi Byrne-Graham.
+                      This is pre-release software. All APIs and
+                      interfaces may change without
+                      notice until version 1.0.0.
+Additional Use Grant: You may make production use of the Licensed Work,
+                      provided that such use does not constitute a
+                      Prohibited Purpose and is one of the following
+                      Permitted Uses.
+
+                      "Prohibited Purpose" means:
+
+                      (a) offering the Licensed Work, or any derivative
+                      work, to third parties as a hosted or managed
+                      service (SaaS), whether for commercial gain or
+                      otherwise; or
+
+                      (b) use by any organisation whose mission,
+                      activities, or funded advocacy actively works to
+                      restrict, diminish, or remove the rights of any
+                      person or group based on race, ethnicity, national
+                      origin, sex, gender, gender identity, gender
+                      expression, sexual orientation, disability, age,
+                      religion, or socioeconomic status. This includes
+                      organisations that fund, lobby for, or promote
+                      policies that deny equal access to healthcare,
+                      education, housing, or legal protections on any
+                      of these grounds.
+
+                      "Permitted Uses" (production use granted
+                      immediately, without waiting for the Change Date):
+
+                      (1) Personal use — any individual using the
+                      Licensed Work for their own projects, learning,
+                      work, or research, regardless of whether that
+                      work generates income. Personal use does not
+                      include use on behalf of, or primarily
+                      benefiting, an organisation that would not
+                      itself qualify for a Permitted Use.
+
+                      (2) Non-profit and charitable use — any
+                      organisation that (i) is registered as a
+                      non-profit, charity, or social enterprise in its
+                      jurisdiction, and (ii) whose mission and
+                      activities are consistent with the principles of
+                      the Universal Declaration of Human Rights,
+                      including equal treatment and dignity for all
+                      people regardless of the characteristics listed
+                      above.
+
+                      (3) Educational use — schools, universities,
+                      vocational training programmes, and research
+                      institutions, provided their use of the Licensed
+                      Work is consistent with the principles stated in
+                      Permitted Use (2)(ii) above.
+
+                      (4) Open-source use — projects that are themselves
+                      distributed under an OSI-approved open-source
+                      license or a license that provides equivalent
+                      freedoms.
+
+                      (5) Plugin and extension development — creating
+                      and distributing plugins, connectors, or
+                      extensions that interoperate with the Licensed
+                      Work. This does not grant production use of the
+                      Licensed Work itself.
+
+                      Non-production use (evaluation, prototyping, and
+                      testing in non-production environments) is
+                      separately granted by the base BSL-1.1 terms
+                      below and does not require an Additional Use
+                      Grant.
+
+                      All other production use requires a commercial
+                      license from the Licensor.
+
+Change Date:          The earlier of (a) the date specified for a given
+                      version in the VERSIONS file, or (b) the fourth
+                      anniversary of the first public release of that
+                      version of the Licensed Work.
+Change License:       Apache License, Version 2.0, with Ethical Use
+                      Addendum (see CHANGE-LICENSE file)
+
+For information about alternative licensing arrangements for the Licensed
+Work, please contact the Licensor.
+
+Notice
+
+Business Source License 1.1
+
+Terms
+
+The Licensor hereby grants you the right to copy, modify, create derivative
+works, redistribute, and make non-production use of the Licensed Work. The
+Licensor may make an Additional Use Grant, above, permitting limited
+production use.
+
+Effective on the Change Date, or the fourth anniversary of the first publicly
+available distribution of a specific version of the Licensed Work under this
+License, whichever comes first, the Licensor hereby grants you rights under
+the terms of the Change License, and the rights granted in the paragraph
+above terminate.
+
+If your use of the Licensed Work does not comply with the requirements
+currently in effect as described in this License, you must purchase a
+commercial license from the Licensor, its affiliated entities, or authorized
+resellers, or you must refrain from using the Licensed Work.
+
+All copies of the original and modified Licensed Work, and derivative works
+of the Licensed Work, are subject to this License. This License applies
+separately for each version of the Licensed Work and the Change Date may
+vary for each version of the Licensed Work released by Licensor.
+
+You must conspicuously display this License on each original or modified
+copy of the Licensed Work. If you receive the Licensed Work in original or
+modified form from a third party, the terms and conditions set forth in
+this License apply to your use of that work.
+
+Any use of the Licensed Work in violation of this License will automatically
+terminate your rights under this License for the current and all other
+versions of the Licensed Work.
+
+This License does not grant you any right in any trademark or logo of
+Licensor or its affiliates (provided that you may use a trademark or logo
+of Licensor as expressly required by this License).
+
+TO THE EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSED WORK IS PROVIDED
+ON AN "AS IS" BASIS. LICENSOR HEREBY DISCLAIMS ALL WARRANTIES AND
+CONDITIONS, EXPRESS OR IMPLIED, INCLUDING (WITHOUT LIMITATION) WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT,
+AND TITLE.

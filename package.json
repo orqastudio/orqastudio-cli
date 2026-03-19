@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@orqastudio/types": "0.1.0-dev",
+    "@orqastudio/plugin-typescript": "0.1.0-dev",
     "@types/node": "^25.5.0",
     "yaml": "^2.7.0"
   },
