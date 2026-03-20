@@ -1,0 +1,225 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/orqastudio/orqastudio-types/blob/main/schemas/orqa-plugin.json",
+  "title": "OrqaStudio Plugin Manifest",
+  "description": "Schema for orqa-plugin.json — the manifest that defines an OrqaStudio plugin's identity, compatibility, capabilities, and entry points.",
+  "type": "object",
+  "required": ["name", "version", "provides"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "JSON Schema reference for editor autocompletion."
+    },
+
+    "name": {
+      "type": "string",
+      "pattern": "^@?[a-z0-9-]+(/[a-z0-9-]+)?$",
+      "description": "Package name. Scoped (@org/name) or unscoped (name)."
+    },
+
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$",
+      "description": "Semver version string."
+    },
+
+    "displayName": {
+      "type": "string",
+      "description": "Human-readable name shown in the plugin manager UI."
+    },
+
+    "description": {
+      "type": "string",
+      "description": "Short description of what the plugin does."
+    },
+
+    "author": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "email": { "type": "string", "format": "email" }
+      }
+    },
+
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier."
+    },
+
+    "requires": {
+      "type": "array",
+      "description": "Plugin dependencies — names of plugins that must be loaded first.",
+      "items": { "type": "string" }
+    },
+
+    "compatibility": {
+      "type": "object",
+      "description": "Minimum versions required for this plugin to function.",
+      "additionalProperties": false,
+      "properties": {
+        "app": {
+          "type": "string",
+          "description": "Minimum OrqaStudio app version (semver range)."
+        },
+        "sdk": {
+          "type": "string",
+          "description": "Minimum @orqastudio/sdk version (semver range)."
+        },
+        "types": {
+          "type": "string",
+          "description": "Minimum @orqastudio/types version (semver range)."
+        }
+      }
+    },
+
+    "provides": {
+      "type": "object",
+      "description": "Capabilities this plugin registers with the app at runtime.",
+      "additionalProperties": false,
+      "properties": {
+        "schemas": {
+          "type": "array",
+          "description": "Artifact type schemas this plugin introduces.",
+          "items": {
+            "type": "object",
+            "required": ["key", "label", "icon", "defaultPath", "idPrefix", "frontmatter"],
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9-]*$",
+                "description": "Unique artifact type key (lowercase, hyphenated)."
+              },
+              "label": { "type": "string", "description": "Singular display label." },
+              "plural": { "type": "string", "description": "Plural display label." },
+              "icon": { "type": "string", "description": "Lucide icon name." },
+              "defaultPath": { "type": "string", "description": "Default relative path within .orqa/." },
+              "idPrefix": { "type": "string", "description": "ID prefix for this type (e.g. 'EPIC')." },
+              "frontmatter": {
+                "type": "object",
+                "required": ["required", "optional"],
+                "additionalProperties": false,
+                "properties": {
+                  "required": { "type": "array", "items": { "type": "string" } },
+                  "optional": { "type": "array", "items": { "type": "string" } }
+                }
+              },
+              "statusTransitions": {
+                "type": "object",
+                "description": "Status transition rules specific to this type.",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+
+        "views": {
+          "type": "array",
+          "description": "Custom views this plugin adds to the app.",
+          "items": {
+            "type": "object",
+            "required": ["key", "label", "icon"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+              "label": { "type": "string" },
+              "icon": { "type": "string" }
+            }
+          }
+        },
+
+        "widgets": {
+          "type": "array",
+          "description": "Dashboard widgets this plugin provides.",
+          "items": {
+            "type": "object",
+            "required": ["key", "label", "icon"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+              "label": { "type": "string" },
+              "icon": { "type": "string" },
+              "defaultPosition": {
+                "type": "object",
+                "properties": {
+                  "row": { "type": "integer" },
+                  "col": { "type": "integer" }
+                }
+              },
+              "defaultSpan": {
+                "type": "object",
+                "properties": {
+                  "rows": { "type": "integer" },
+                  "cols": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+
+        "relationships": {
+          "type": "array",
+          "description": "Relationship types this plugin introduces.",
+          "items": {
+            "type": "object",
+            "required": ["key", "inverse", "label", "inverseLabel", "from", "to", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+              "inverse": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+              "label": { "type": "string" },
+              "inverseLabel": { "type": "string" },
+              "from": { "type": "array", "items": { "type": "string" } },
+              "to": { "type": "array", "items": { "type": "string" } },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "settings": {
+      "type": "object",
+      "description": "Settings panel registration for this plugin.",
+      "additionalProperties": false,
+      "properties": {
+        "entrypoint": {
+          "type": "string",
+          "description": "Relative path to the Svelte settings component."
+        }
+      }
+    },
+
+    "defaultNavigation": {
+      "type": "array",
+      "description": "Recommended navigation tree additions from this plugin.",
+      "items": { "$ref": "#/$defs/defaultNavItem" }
+    }
+  },
+
+  "$defs": {
+    "defaultNavItem": {
+      "type": "object",
+      "required": ["key", "type", "icon"],
+      "additionalProperties": false,
+      "properties": {
+        "key": { "type": "string" },
+        "type": { "type": "string", "enum": ["plugin", "group"] },
+        "icon": { "type": "string" },
+        "label": { "type": "string" },
+        "pluginSource": { "type": "string" },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/defaultNavItem" }
+        }
+      }
+    }
+  }
+}
