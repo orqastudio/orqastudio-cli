@@ -409,7 +409,7 @@ export function runPostInstallSetup(
 	const pluginAgentCount = countPluginAgents(projectRoot);
 
 	const lspPath = path.join(connectorPluginDir, ".lsp.json");
-	const mcpPath = path.join(connectorPluginDir, ".mcp.json");
+	const mcpPath = path.join(projectRoot, ".mcp.json");
 
 	const newLsp = JSON.stringify(lsp, null, 2);
 	const existingLsp = fs.existsSync(lspPath) ? fs.readFileSync(lspPath, "utf-8") : "";
@@ -650,7 +650,9 @@ function aggregateServers(projectRoot: string): { lsp: ServerMap; mcp: ServerMap
 				if (provides.mcpServers && typeof provides.mcpServers === "object") {
 					for (const [name, config] of Object.entries(provides.mcpServers)) {
 						if (!(name in mcp)) {
-							mcp[name] = config;
+							// Strip "type" field — Claude Code doesn't use it
+							const { type, ...mcpConfig } = config as Record<string, unknown>;
+							mcp[name] = mcpConfig;
 						}
 					}
 				}
