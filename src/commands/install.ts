@@ -407,7 +407,7 @@ function cmdSmokeTest(root: string): void {
 
 	// Artifact graph builds (validates all directories are scannable)
 	try {
-		runQuiet("orqa validate . --json");
+		runQuiet("orqa enforce . --json");
 		console.log("  ✓ artifact graph builds");
 	} catch {
 		console.error("  ✗ artifact graph failed to build");

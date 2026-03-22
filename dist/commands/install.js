@@ -382,7 +382,7 @@ function cmdSmokeTest(root) {
     }
     // Artifact graph builds (validates all directories are scannable)
     try {
-        runQuiet("orqa validate . --json");
+        runQuiet("orqa enforce . --json");
         console.log("  ✓ artifact graph builds");
     }
     catch {

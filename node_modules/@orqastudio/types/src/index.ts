@@ -97,6 +97,10 @@ export type {
 	Condition,
 	EnforcementViolation,
 	StoredEnforcementViolation,
+	EnforcementEvent,
+	EnforcementResponse,
+	EnforcementResult,
+	EnforcementResolution,
 } from "./enforcement.js";
 
 export type { Lesson, NewLesson, LessonStatus, LessonCategory } from "./lessons.js";
@@ -135,6 +139,7 @@ export type {
 	PluginProvides,
 	ArtifactSchema,
 	ArtifactSchemaFrontmatter,
+	EnforcementMechanism,
 	ViewRegistration,
 	WidgetRegistration,
 	RelationshipType,

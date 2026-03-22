@@ -10,6 +10,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { parse as parseYaml } from "yaml";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -93,15 +94,21 @@ function scanDirectory(dir: string, projectRoot: string, nodes: GraphNode[]): vo
 function parseArtifact(filePath: string, projectRoot: string): GraphNode | null {
 	const content = fs.readFileSync(filePath, "utf-8");
 
-	// Extract YAML frontmatter
-	const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-	if (!fmMatch) return null;
+	// Extract and parse YAML frontmatter
+	if (!content.startsWith("---\n")) return null;
+	const fmEnd = content.indexOf("\n---", 4);
+	if (fmEnd === -1) return null;
 
-	const frontmatter = parseSimpleYaml(fmMatch[1]);
+	let frontmatter: Record<string, unknown>;
+	try {
+		frontmatter = parseYaml(content.slice(4, fmEnd)) as Record<string, unknown>;
+	} catch {
+		return null;
+	}
 	if (!frontmatter.id) return null;
 
 	// Extract title from first heading after frontmatter
-	const afterFm = content.slice(fmMatch[0].length);
+	const afterFm = content.slice(fmEnd + 5);
 	const titleMatch = afterFm.match(/^#\s+(.+)/m);
 	const title = (frontmatter.title as string) ?? titleMatch?.[1] ?? frontmatter.id as string;
 
@@ -139,97 +146,6 @@ function inferType(filePath: string): string {
 		}
 	}
 	return "artifact";
-}
-
-/**
- * Simple YAML parser for frontmatter — handles the subset we need.
- * Not a full YAML parser; handles scalars, simple arrays, and relationship arrays.
- */
-function parseSimpleYaml(yaml: string): Record<string, unknown> {
-	const result: Record<string, unknown> = {};
-	const lines = yaml.split("\n");
-	let currentKey = "";
-	let currentArray: unknown[] | null = null;
-	let currentArrayItem: Record<string, unknown> | null = null;
-
-	for (const line of lines) {
-		// Array item with fields (relationship entry)
-		const arrayItemMatch = line.match(/^\s+-\s+(\w+):\s*(.+)/);
-		if (arrayItemMatch && currentArray) {
-			if (currentArrayItem) {
-				currentArray.push(currentArrayItem);
-			}
-			currentArrayItem = { [arrayItemMatch[1]]: parseValue(arrayItemMatch[2]) };
-			continue;
-		}
-
-		// Continuation of array item
-		const arrayItemContMatch = line.match(/^\s+(\w+):\s*(.+)/);
-		if (arrayItemContMatch && currentArrayItem) {
-			currentArrayItem[arrayItemContMatch[1]] = parseValue(arrayItemContMatch[2]);
-			continue;
-		}
-
-		// Simple array item
-		const simpleArrayMatch = line.match(/^\s+-\s*(.+)/);
-		if (simpleArrayMatch && currentArray) {
-			if (currentArrayItem) {
-				currentArray.push(currentArrayItem);
-				currentArrayItem = null;
-			}
-			currentArray.push(parseValue(simpleArrayMatch[1]));
-			continue;
-		}
-
-		// Top-level key
-		const keyMatch = line.match(/^(\w[\w-]*):\s*(.*)/);
-		if (keyMatch) {
-			// Flush previous array
-			if (currentArray) {
-				if (currentArrayItem) {
-					currentArray.push(currentArrayItem);
-					currentArrayItem = null;
-				}
-				result[currentKey] = currentArray;
-				currentArray = null;
-			}
-
-			currentKey = keyMatch[1];
-			const value = keyMatch[2].trim();
-
-			if (value === "" || value === "[]") {
-				// Could be start of array block or empty
-				currentArray = [];
-			} else {
-				result[currentKey] = parseValue(value);
-			}
-		}
-	}
-
-	// Flush final array
-	if (currentArray) {
-		if (currentArrayItem) {
-			currentArray.push(currentArrayItem);
-		}
-		result[currentKey] = currentArray;
-	}
-
-	return result;
-}
-
-function parseValue(value: string): unknown {
-	const trimmed = value.trim();
-	if (trimmed === "true") return true;
-	if (trimmed === "false") return false;
-	if (trimmed === "null" || trimmed === "~") return null;
-	if (/^-?\d+$/.test(trimmed)) return parseInt(trimmed, 10);
-	if (/^-?\d+\.\d+$/.test(trimmed)) return parseFloat(trimmed);
-	// Strip quotes
-	if ((trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-		(trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-		return trimmed.slice(1, -1);
-	}
-	return trimmed;
 }
 
 // ---------------------------------------------------------------------------

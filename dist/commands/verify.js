@@ -12,7 +12,7 @@ export async function runVerifyCommand() {
     const root = getRoot();
     let failed = false;
     const checks = [
-        { name: "integrity", cmd: "orqa validate ." },
+        { name: "integrity", cmd: "orqa enforce ." },
         { name: "version", cmd: "orqa version check" },
         { name: "license", cmd: "orqa repo license" },
         { name: "readme", cmd: "orqa repo readme" },

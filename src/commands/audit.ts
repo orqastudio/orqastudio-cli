@@ -41,7 +41,7 @@ export async function runAuditCommand(args: string[] = []): Promise<void> {
 	const fix = args.includes("--fix") ? " --fix" : "";
 
 	const checks = [
-		{ name: "integrity", cmd: `orqa validate .${fix}` },
+		{ name: "integrity", cmd: `orqa enforce .${fix}` },
 		{ name: "version", cmd: "orqa version check" },
 		{ name: "license", cmd: "orqa repo license" },
 		{ name: "readme", cmd: "orqa repo readme" },

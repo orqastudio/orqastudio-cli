@@ -2,9 +2,9 @@
  * Schema validation command — validates project.json and orqa-plugin.json
  * against their known schemas.
  *
- * orqa validate schema [path] [--json]
+ * orqa enforce schema [path] [--json]
  *
- * Called as a subcommand of `orqa validate`.
+ * Called as a subcommand of `orqa enforce`.
  */
 
 import { readFileSync, existsSync, readdirSync } from "node:fs";
@@ -16,7 +16,7 @@ import {
 } from "../validator/checks/plugin-integrity.js";
 
 const USAGE = `
-Usage: orqa validate schema [path] [options]
+Usage: orqa enforce schema [path] [options]
 
 Validate project.json and plugin manifests against their schemas.
 

@@ -7,7 +7,7 @@
  *   orqa verify                                   Governance checks (integrity, version, license, readme)
  *   orqa check [rust|app|types|sdk|cli]           Code quality (lint, typecheck, format)
  *   orqa test [rust|app]                          Run test suites
- *   orqa validate [path] [--json]                 Integrity validation only
+ *   orqa enforce [path] [--json] [--fix]            Enforcement + integrity validation
  *   orqa plugin <subcommand>                      Plugin management
  *   orqa graph [--type <type>] [--status <s>]     Browse the artifact graph
  *   orqa version sync|bump|check|show             Version management

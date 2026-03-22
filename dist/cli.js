@@ -7,14 +7,13 @@
  *   orqa verify                                   Governance checks (integrity, version, license, readme)
  *   orqa check [rust|app|types|sdk|cli]           Code quality (lint, typecheck, format)
  *   orqa test [rust|app]                          Run test suites
- *   orqa validate [path] [--json]                 Integrity validation only
+ *   orqa enforce [path] [--json] [--fix]            Enforcement + integrity validation
  *   orqa plugin <subcommand>                      Plugin management
  *   orqa graph [--type <type>] [--status <s>]     Browse the artifact graph
  *   orqa version sync|bump|check|show             Version management
  *   orqa repo license|readme                      Repo maintenance audits
  */
 import { runPluginCommand } from "./commands/plugin.js";
-import { runValidateCommand } from "./commands/validate.js";
 import { runIdCommand } from "./commands/id.js";
 import { runMcpCommand } from "./commands/mcp.js";
 import { runLspCommand } from "./commands/lsp.js";
@@ -28,6 +27,7 @@ import { runCheckCommand } from "./commands/check.js";
 import { runTestCommand } from "./commands/test.js";
 import { runDevCommand } from "./commands/dev.js";
 import { runLinkCommand } from "./commands/link.js";
+import { runEnforceCommand } from "./commands/enforce.js";
 const USAGE = `
 OrqaStudio CLI v0.1.0-dev
 
@@ -39,7 +39,7 @@ Commands:
   audit       Full governance audit (integrity, version, license, readme)
   check       Code quality checks (lint, typecheck, format)
   test        Run test suites (rust, app)
-  validate    Integrity validation only (--fix to auto-fix)
+  enforce     Enforcement + integrity validation (--fix, --mechanism, --report)
   id          Artifact ID management (generate, check, migrate)
   mcp         Start MCP server (connects to running app or spawns direct)
   lsp         Start LSP server (connects to running app or spawns direct)
@@ -48,6 +48,7 @@ Commands:
   version     Version management (sync, bump, check, show)
   repo        Repo maintenance (license audit, readme audit)
   link        Cross-platform symlink management (create, verify, status)
+  log         Log enforcement responses (enforcement-response)
 
 Options:
   --help, -h     Show this help message
@@ -84,9 +85,6 @@ async function main() {
         case "test":
             await runTestCommand(commandArgs);
             break;
-        case "validate":
-            await runValidateCommand(commandArgs);
-            break;
         case "id":
             await runIdCommand(commandArgs);
             break;
@@ -113,6 +111,20 @@ async function main() {
             break;
         case "link":
             await runLinkCommand(commandArgs);
+            break;
+        case "enforce":
+            await runEnforceCommand(commandArgs);
+            break;
+        case "log":
+            // orqa log enforcement-response → delegates to enforce response
+            if (commandArgs[0] === "enforcement-response") {
+                await runEnforceCommand(["response", ...commandArgs.slice(1)]);
+            }
+            else {
+                console.error(`Unknown log subcommand: ${commandArgs[0] ?? "(none)"}`);
+                console.error("Available: enforcement-response");
+                process.exit(1);
+            }
             break;
         default:
             console.error(`Unknown command: ${command}`);

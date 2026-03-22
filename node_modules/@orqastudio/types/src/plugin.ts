@@ -10,12 +10,22 @@
 // Artifact Schema
 // ---------------------------------------------------------------------------
 
-/** Frontmatter field specification for an artifact schema. */
+/**
+ * JSON Schema (draft 2020-12) for artifact frontmatter validation.
+ *
+ * Each artifact type declares its frontmatter constraints as a JSON Schema
+ * object. The validator auto-derives `id` (pattern from idPrefix) and
+ * `status` (enum from statusTransitions keys) if not explicitly declared.
+ */
 export interface ArtifactSchemaFrontmatter {
+	/** Always "object" — frontmatter is a key-value map. */
+	type: "object";
 	/** Fields that must be present in the frontmatter. */
-	required: string[];
-	/** Fields that may be present in the frontmatter. */
-	optional: string[];
+	required?: string[];
+	/** JSON Schema property definitions for frontmatter fields. */
+	properties?: Record<string, Record<string, unknown>>;
+	/** Whether unlisted properties are allowed (defaults to true). */
+	additionalProperties?: boolean;
 }
 
 /** An artifact type schema provided by a plugin. */
@@ -340,6 +350,29 @@ export interface KeyCollision {
 	semanticMatch: boolean;
 }
 
+// ---------------------------------------------------------------------------
+// Enforcement Mechanisms
+// ---------------------------------------------------------------------------
+
+/**
+ * An enforcement mechanism provided by a plugin.
+ *
+ * Rules reference mechanisms by key in their `enforcement` entries.
+ * The validator checks that every referenced mechanism is registered
+ * by an installed plugin.
+ */
+export interface EnforcementMechanism {
+	/** Unique mechanism key (e.g. "behavioral", "pre-commit", "eslint"). */
+	key: string;
+	/** Human-readable description. */
+	description: string;
+	/**
+	 * Strength level (1-10). Higher = stronger enforcement.
+	 * 1 = behavioral (prompt reminder), 10 = hard block.
+	 */
+	strength: number;
+}
+
 /** The `provides` block of a plugin manifest. */
 export interface PluginProvides {
 	/** Artifact type schemas this plugin introduces. */
@@ -356,6 +389,8 @@ export interface PluginProvides {
 	cliTools?: CliToolRegistration[];
 	/** Hooks triggered on specific events. */
 	hooks?: HookRegistration[];
+	/** Enforcement mechanisms this plugin provides. */
+	enforcement_mechanisms?: EnforcementMechanism[];
 	/** Behavioral rules appended to BEHAVIORAL_RULES in the prompt-injector. */
 	behavioral_rules?: string[];
 	/** Mode templates merged into MODE_TEMPLATES. Plugin keys must not collide with built-in mode keys. */
