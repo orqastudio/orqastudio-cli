@@ -19,7 +19,7 @@ import { existsSync, readFileSync, writeFileSync, readdirSync, mkdirSync } from 
 import { join, dirname } from "node:path";
 import { parse as parseYaml } from "yaml";
 import { getRoot } from "../lib/root.js";
-import { logEvent, createEvent, logResponse, readEvents, readResponses, logValidatorResults, } from "../lib/enforcement-log.js";
+import { logEvent, createEvent, logResponse, readEvents, readResponses, } from "../lib/enforcement-log.js";
 const USAGE = `
 Usage: orqa enforce [path] [options]
 
@@ -94,51 +94,31 @@ function runRustBinary(binaryPath, targetPath, autoFix) {
     }
 }
 /**
- * Fallback: run the TypeScript validator when the Rust binary isn't built.
+ * Call the running daemon's /validate endpoint.
+ * Returns the JSON response body string, or null if the daemon is not reachable.
  */
-async function runTypeScriptFallback(targetPath, jsonOutput, autoFix) {
-    const { buildGraph } = await import("../validator/graph.js");
-    const { buildCheckContext, runChecksWithSummary } = await import("../validator/checker.js");
-    const { applyFixes } = await import("../validator/fixer.js");
-    const graph = buildGraph({ projectRoot: targetPath });
-    const ctx = buildCheckContext(targetPath);
-    let summary = runChecksWithSummary(graph, ctx);
-    if (autoFix && summary.findings.some((f) => f.autoFixable)) {
-        const fixSummary = applyFixes(summary.findings, graph, ctx, targetPath);
-        if (fixSummary.applied > 0) {
-            if (!jsonOutput) {
-                console.log(`Auto-fixed ${fixSummary.applied} issue(s).`);
-            }
-            const rebuiltGraph = buildGraph({ projectRoot: targetPath });
-            summary = runChecksWithSummary(rebuiltGraph, ctx);
+async function callDaemon(targetPath, autoFix) {
+    const port = 3002;
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 500);
+        try {
+            const response = await fetch(`http://127.0.0.1:${port}/validate`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: targetPath, fix: autoFix }),
+                signal: controller.signal,
+            });
+            if (!response.ok)
+                return null;
+            return await response.text();
+        }
+        finally {
+            clearTimeout(timeout);
         }
     }
-    if (jsonOutput) {
-        console.log(JSON.stringify(summary, null, 2));
-    }
-    else {
-        const { errors, warnings, totalFindings } = summary;
-        if (totalFindings === 0) {
-            console.log("All enforcement checks passed. 0 errors, 0 warnings.");
-        }
-        else {
-            const byCategory = new Map();
-            for (const f of summary.findings) {
-                const list = byCategory.get(f.category) ?? [];
-                list.push(f);
-                byCategory.set(f.category, list);
-            }
-            for (const [category, findings] of byCategory) {
-                console.log(`\n${category} (${findings.length}):`);
-                for (const f of findings) {
-                    const icon = f.severity === "error" ? "E" : "W";
-                    console.log(`  [${icon}] ${f.artifactId}: ${f.message}`);
-                }
-            }
-            console.log(`\n${errors} error(s), ${warnings} warning(s).`);
-            if (errors > 0)
-                process.exit(1);
-        }
+    catch {
+        return null;
     }
 }
 export async function runEnforceCommand(args) {
@@ -196,80 +176,80 @@ export async function runEnforceCommand(args) {
         await showReport(projectRoot, jsonOutput);
         return;
     }
-    // Try Rust binary first
-    const binary = findBinary(projectRoot);
-    if (binary) {
-        const { exitCode, output } = runRustBinary(binary, targetPath, autoFix);
-        let parsed;
-        try {
-            parsed = JSON.parse(output);
-        }
-        catch {
-            process.stdout.write(output);
-            process.exit(exitCode);
-            return;
-        }
-        const checks = parsed.checks ?? [];
-        // Log enforcement events to the centralised log
-        logValidatorResults(projectRoot, checks);
-        // Apply mechanism/rule/file filters
-        let filteredChecks = checks;
-        if (mechanism) {
-            if (mechanism === "json-schema") {
-                filteredChecks = filteredChecks.filter((c) => c.category === "SchemaViolation");
+    // Try daemon first (low-latency, keeps graph in memory).
+    const daemonOutput = await callDaemon(targetPath, autoFix);
+    const { exitCode, output } = daemonOutput !== null
+        ? { exitCode: 0, output: daemonOutput }
+        : (() => {
+            // Daemon not running — spawn binary directly.
+            const binary = findBinary(projectRoot);
+            if (binary === null) {
+                console.error("orqa-validation binary not found and daemon is not running.");
+                console.error("Build with: cargo build --manifest-path libs/validation/Cargo.toml --release");
+                console.error("Or start the daemon with: orqa daemon start");
+                process.exit(1);
             }
-            // Other mechanism filters can be added as more mechanisms are wired in
-        }
-        if (ruleId) {
-            filteredChecks = filteredChecks.filter((c) => c.artifact_id === ruleId);
-        }
-        if (filePath) {
-            filteredChecks = filteredChecks.filter((c) => c.artifact_id?.includes(filePath) ?? false);
-        }
-        if (jsonOutput) {
-            console.log(JSON.stringify({
-                checks: filteredChecks,
-                health: parsed.health,
-                fixes_applied: parsed.fixes_applied ?? null,
-                enforcement_events: parsed.enforcement_events ?? [],
-            }, null, 2));
-        }
-        else {
-            if (filteredChecks.length === 0) {
-                console.log("All enforcement checks passed. 0 errors, 0 warnings.");
-            }
-            else {
-                const byCategory = new Map();
-                for (const c of filteredChecks) {
-                    const list = byCategory.get(c.category) ?? [];
-                    list.push(c);
-                    byCategory.set(c.category, list);
-                }
-                for (const [category, findings] of byCategory) {
-                    console.log(`\n${category} (${findings.length}):`);
-                    for (const f of findings) {
-                        const icon = f.severity === "Error" || f.severity === "error" ? "E" : "W";
-                        console.log(`  [${icon}] ${f.artifact_id}: ${f.message}`);
-                    }
-                }
-                const errors = filteredChecks.filter((c) => c.severity === "Error" || c.severity === "error").length;
-                const warnings = filteredChecks.length - errors;
-                console.log(`\n${errors} error(s), ${warnings} warning(s).`);
-                if (parsed.fixes_applied && parsed.fixes_applied.length > 0) {
-                    console.log(`Auto-fixed ${parsed.fixes_applied.length} issue(s).`);
-                }
-            }
-        }
-        if (exitCode !== 0)
-            process.exit(exitCode);
+            return runRustBinary(binary, targetPath, autoFix);
+        })();
+    let parsed;
+    try {
+        parsed = JSON.parse(output);
+    }
+    catch {
+        process.stdout.write(output);
+        process.exit(exitCode);
         return;
     }
-    // Fallback to TypeScript validator
-    if (!jsonOutput) {
-        console.error("Note: Rust validator binary not found — using TypeScript fallback.");
-        console.error("Build with: cd libs/validation && cargo build --release\n");
+    const checks = parsed.checks ?? [];
+    // Apply mechanism/rule/file filters
+    let filteredChecks = checks;
+    if (mechanism) {
+        if (mechanism === "json-schema") {
+            filteredChecks = filteredChecks.filter((c) => c.category === "SchemaViolation");
+        }
     }
-    await runTypeScriptFallback(targetPath, jsonOutput, autoFix);
+    if (ruleId) {
+        filteredChecks = filteredChecks.filter((c) => c.artifact_id === ruleId);
+    }
+    if (filePath) {
+        filteredChecks = filteredChecks.filter((c) => c.artifact_id?.includes(filePath) ?? false);
+    }
+    if (jsonOutput) {
+        console.log(JSON.stringify({
+            checks: filteredChecks,
+            health: parsed.health,
+            fixes_applied: parsed.fixes_applied ?? null,
+            enforcement_events: parsed.enforcement_events ?? [],
+        }, null, 2));
+    }
+    else {
+        if (filteredChecks.length === 0) {
+            console.log("All enforcement checks passed. 0 errors, 0 warnings.");
+        }
+        else {
+            const byCategory = new Map();
+            for (const c of filteredChecks) {
+                const list = byCategory.get(c.category) ?? [];
+                list.push(c);
+                byCategory.set(c.category, list);
+            }
+            for (const [category, findings] of byCategory) {
+                console.log(`\n${category} (${findings.length}):`);
+                for (const f of findings) {
+                    const icon = f.severity === "Error" || f.severity === "error" ? "E" : "W";
+                    console.log(`  [${icon}] ${f.artifact_id}: ${f.message}`);
+                }
+            }
+            const errors = filteredChecks.filter((c) => c.severity === "Error" || c.severity === "error").length;
+            const warnings = filteredChecks.length - errors;
+            console.log(`\n${errors} error(s), ${warnings} warning(s).`);
+            if (parsed.fixes_applied && parsed.fixes_applied.length > 0) {
+                console.log(`Auto-fixed ${parsed.fixes_applied.length} issue(s).`);
+            }
+        }
+    }
+    if (exitCode !== 0)
+        process.exit(exitCode);
 }
 async function handleResponse(args) {
     const eventId = getFlag(args, "--event-id");

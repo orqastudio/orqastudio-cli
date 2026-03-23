@@ -86,30 +86,4 @@ export function readResponses(projectRoot) {
     }
     return results;
 }
-/**
- * Log a batch of enforcement events from validator integrity checks.
- *
- * Converts `orqa-validation` IntegrityCheck results into enforcement events.
- */
-export function logValidatorResults(projectRoot, checks) {
-    const events = [];
-    for (const check of checks) {
-        // Only log schema violations as enforcement events.
-        if (check.category !== "SchemaViolation")
-            continue;
-        const result = check.severity === "Error" ? "fail" : "warn";
-        const event = createEvent({
-            mechanism: "json-schema",
-            type: "frontmatter",
-            rule_id: null,
-            artifact_id: check.artifact_id,
-            result,
-            message: check.message,
-            source: "validator",
-        });
-        events.push(event);
-        logEvent(projectRoot, event);
-    }
-    return events;
-}
 //# sourceMappingURL=enforcement-log.js.map

@@ -13,4 +13,9 @@ export declare function readManifest(pluginDir: string): PluginManifest;
  * Empty array means valid.
  */
 export declare function validateManifest(manifest: PluginManifest): string[];
+/**
+ * Check that a plugin manifest contributes at least one capability or content mapping.
+ * A plugin that provides nothing is invalid.
+ */
+export declare function isPluginManifestNonEmpty(manifest: PluginManifest): boolean;
 //# sourceMappingURL=manifest.d.ts.map

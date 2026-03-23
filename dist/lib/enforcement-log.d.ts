@@ -22,16 +22,5 @@ export declare function logResponse(projectRoot: string, response: EnforcementRe
 export declare function readEvents(projectRoot: string): EnforcementEvent[];
 /** Read all enforcement responses from the log file. */
 export declare function readResponses(projectRoot: string): EnforcementResponse[];
-/**
- * Log a batch of enforcement events from validator integrity checks.
- *
- * Converts `orqa-validation` IntegrityCheck results into enforcement events.
- */
-export declare function logValidatorResults(projectRoot: string, checks: Array<{
-    category: string;
-    severity: string;
-    artifact_id: string;
-    message: string;
-}>): EnforcementEvent[];
 export type { EnforcementEvent, EnforcementResponse, EnforcementResult, EnforcementResolution };
 //# sourceMappingURL=enforcement-log.d.ts.map

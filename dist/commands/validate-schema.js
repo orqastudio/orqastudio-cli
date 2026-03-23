@@ -8,7 +8,33 @@
  */
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, relative } from "node:path";
-import { checkRequiredCategories, checkPluginDependencies, } from "../validator/checks/plugin-integrity.js";
+const REQUIRED_PLUGIN_CATEGORIES = ["language", "framework"];
+function checkRequiredCategories(plugins) {
+    const categories = new Set(plugins.map((p) => p.category).filter(Boolean));
+    return REQUIRED_PLUGIN_CATEGORIES
+        .filter((cat) => !categories.has(cat))
+        .map((cat) => ({
+        plugin: "(project)",
+        severity: "warning",
+        message: `No plugin provides the "${cat}" category — consider installing one`,
+    }));
+}
+function checkPluginDependencies(plugins) {
+    const installed = new Set(plugins.map((p) => p.name));
+    const findings = [];
+    for (const plugin of plugins) {
+        for (const dep of plugin.requires) {
+            if (!installed.has(dep)) {
+                findings.push({
+                    plugin: plugin.name,
+                    severity: "error",
+                    message: `Plugin "${plugin.name}" requires "${dep}" which is not installed`,
+                });
+            }
+        }
+    }
+    return findings;
+}
 const USAGE = `
 Usage: orqa enforce schema [path] [options]
 

@@ -56,7 +56,36 @@ export function validateManifest(manifest: PluginManifest): string[] {
 		if (!Array.isArray(manifest.provides.relationships)) {
 			errors.push("provides.relationships must be an array");
 		}
+
+		if (!isPluginManifestNonEmpty(manifest)) {
+			errors.push(
+				"Plugin provides nothing: at least one of provides.schemas, provides.relationships, " +
+					"provides.views, provides.widgets, provides.hooks, provides.cliTools, " +
+					"provides.enforcement_mechanisms, provides.agents, provides.knowledge, " +
+					"or content must be non-empty",
+			);
+		}
 	}
 
 	return errors;
+}
+
+/**
+ * Check that a plugin manifest contributes at least one capability or content mapping.
+ * A plugin that provides nothing is invalid.
+ */
+export function isPluginManifestNonEmpty(manifest: PluginManifest): boolean {
+	const p = manifest.provides;
+	return (
+		(Array.isArray(p.schemas) && p.schemas.length > 0) ||
+		(Array.isArray(p.relationships) && p.relationships.length > 0) ||
+		(Array.isArray(p.views) && p.views.length > 0) ||
+		(Array.isArray(p.widgets) && p.widgets.length > 0) ||
+		(Array.isArray(p.hooks) && p.hooks.length > 0) ||
+		(Array.isArray(p.cliTools) && p.cliTools.length > 0) ||
+		(Array.isArray(p.enforcement_mechanisms) && p.enforcement_mechanisms.length > 0) ||
+		(Array.isArray(p.agents) && p.agents.length > 0) ||
+		(Array.isArray(p.knowledge) && p.knowledge.length > 0) ||
+		(manifest.content !== undefined && Object.keys(manifest.content).length > 0)
+	);
 }

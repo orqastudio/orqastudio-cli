@@ -14,7 +14,4 @@ export { scanArtifactGraph, queryGraph, getGraphStats, type GraphNode, type Grap
 export { readCanonicalVersion, writeCanonicalVersion, syncVersions, checkVersionDrift, } from "./lib/version-sync.js";
 export { auditLicenses, DEFAULT_LICENSE_POLICY, type LicenseAuditResult, type LicensePolicy } from "./lib/license.js";
 export { auditReadmes, generateReadmeTemplate, type ReadmeAuditResult } from "./lib/readme.js";
-export { buildGraph } from "./validator/graph.js";
-export { runChecks, runChecksWithSummary, buildCheckContext, ALL_CHECKS } from "./validator/checker.js";
-export type { IntegrityFinding, IntegrityCategory, IntegritySeverity, ArtifactNode, ArtifactGraph, CheckContext } from "./validator/types.js";
 //# sourceMappingURL=index.d.ts.map

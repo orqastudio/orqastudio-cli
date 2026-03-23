@@ -19,7 +19,4 @@ export { readCanonicalVersion, writeCanonicalVersion, syncVersions, checkVersion
 // Repo maintenance
 export { auditLicenses, DEFAULT_LICENSE_POLICY } from "./lib/license.js";
 export { auditReadmes, generateReadmeTemplate } from "./lib/readme.js";
-// Integrity validation (absorbed from @orqastudio/integrity-validator)
-export { buildGraph } from "./validator/graph.js";
-export { runChecks, runChecksWithSummary, buildCheckContext, ALL_CHECKS } from "./validator/checker.js";
 //# sourceMappingURL=index.js.map
